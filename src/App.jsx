@@ -341,9 +341,9 @@ const DrawingPad = () => {
 
 import * as wanakana from 'wanakana';
 
-const MenuScreen = ({ modules, activeModule, setActiveModule, startStudy }) => {
+const MenuScreen = ({ modules, selectedModuleIds, toggleModuleSelection, startSelected, launchModule }) => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [lookupChar, setLookupChar] = useState(null);
+    const [lookupResult, setLookupResult] = useState(null);
     const [notFound, setNotFound] = useState(false);
 
     const handleSearch = (e) => {
@@ -352,42 +352,51 @@ const MenuScreen = ({ modules, activeModule, setActiveModule, startStudy }) => {
         if (!term) return;
 
         setNotFound(false);
+        const lowerTerm = term.toLowerCase();
+        // Convert to Hiragana to ensure Katakana inputs (e.g. "ニチ") match module readings (e.g. "にち")
+        const kana = wanakana.toHiragana(term);
 
-        // 1. Check if input is a single Kanji/Japanese character (direct lookup)
-        if (wanakana.isJapanese(term) && term.length === 1) {
-            setLookupChar(term);
+        // 1. Search in Modules
+        let foundInModule = null;
+        for (const mod of modules) {
+            const index = mod.kanji.findIndex(k =>
+                k.char === term ||
+                k.meaning.toLowerCase().includes(lowerTerm) ||
+                k.on.includes(kana) ||
+                k.kun.includes(kana)
+            );
+            if (index !== -1) {
+                foundInModule = { char: mod.kanji[index].char, module: mod, index };
+                break;
+            }
+        }
+
+        if (foundInModule) {
+            setLookupResult(foundInModule);
             return;
         }
 
-        // 2. Search in Modules (Romaji -> Kana, or English Meaning)
-        const kana = wanakana.toKana(term);
-        const lowerTerm = term.toLowerCase();
-
-        const found = modules.flatMap(m => m.kanji).find(k =>
-            k.meaning.toLowerCase().includes(lowerTerm) ||
-            k.on.includes(kana) ||
-            k.kun.includes(kana)
-        );
-
-        if (found) {
-            setLookupChar(found.char);
-        } else {
-            // If not found in modules, and it looks like a Kanji (but maybe user typed multiple?), try the first char?
-            // Or just show not found.
-            if (wanakana.isKanji(term[0])) {
-                setLookupChar(term[0]);
-            } else {
-                setNotFound(true);
-                setTimeout(() => setNotFound(false), 2000);
+        // 2. If not in module, check if it's a valid Japanese character
+        if (wanakana.isJapanese(term)) {
+            // If it's a Kanji or single char, show it without module link
+            if (term.length === 1) {
+                setLookupResult({ char: term, module: null, index: null });
+                return;
             }
+            // If it's romaji/kana that didn't match a module, maybe convert to kanji? 
+            // Without a dictionary API, we can't easily convert "neko" -> "猫" if it's not in our modules.
+            // So we assume if it didn't match a module, and it's not a single char input, it's not found.
         }
+
+        setNotFound(true);
+        setTimeout(() => setNotFound(false), 2000);
     };
 
     return (
         <div className="flex-1 flex flex-col items-center p-6 space-y-8 pop-in w-full h-full overflow-hidden">
             <div className="text-center space-y-2 flex-shrink-0">
-                <h1 className="text-4xl font-bold text-slate-800">Kanji Quest</h1>
-                <p className="text-slate-500">Pen & Paper Mastery</p>
+                <h1 className="text-4xl font-bold text-slate-800">KanjiCraft</h1>
+                <p className="text-slate-500">Learn to write Japanese characters by hand!</p>
             </div>
 
             {/* Quick Lookup */}
@@ -408,11 +417,11 @@ const MenuScreen = ({ modules, activeModule, setActiveModule, startStudy }) => {
             </form>
 
             {/* Lookup Modal */}
-            {lookupChar && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setLookupChar(null)}>
+            {lookupResult && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setLookupResult(null)}>
                     <div className="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-6 pop-in w-full max-w-sm relative" onClick={e => e.stopPropagation()}>
                         <button
-                            onClick={() => setLookupChar(null)}
+                            onClick={() => setLookupResult(null)}
                             className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -420,10 +429,19 @@ const MenuScreen = ({ modules, activeModule, setActiveModule, startStudy }) => {
 
                         <h3 className="text-2xl font-bold text-slate-800">Stroke Order</h3>
                         <div className="bg-slate-50 rounded-2xl border-2 border-slate-100 p-4">
-                            <StrokeOrderViewer char={lookupChar} className="w-48 h-48" />
+                            <StrokeOrderViewer char={lookupResult.char} className="w-48 h-48" />
                         </div>
                         <div className="text-center">
-                            <div className="text-6xl font-kanji text-slate-800 mb-2">{lookupChar}</div>
+                            <div className="text-6xl font-kanji text-slate-800 mb-2">{lookupResult.char}</div>
+                            {lookupResult.module && (
+                                <button
+                                    onClick={() => launchModule(lookupResult.module, lookupResult.index)}
+                                    className="mt-4 px-6 py-2 bg-indigo-100 text-indigo-700 rounded-lg font-bold hover:bg-indigo-200 transition-colors flex items-center gap-2 mx-auto"
+                                >
+                                    <span>View in Module</span>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -434,12 +452,19 @@ const MenuScreen = ({ modules, activeModule, setActiveModule, startStudy }) => {
                     {modules.map(mod => (
                         <button
                             key={mod.id}
-                            onClick={() => setActiveModule(mod)}
-                            className={`p-6 rounded-2xl border-2 text-left transition-all flex flex-col justify-between h-32 ${activeModule.id === mod.id ? 'border-indigo-500 bg-indigo-50 shadow-indigo-100 shadow-lg' : 'border-slate-200 bg-white hover:border-indigo-200 hover:shadow-md'}`}
+                            onClick={() => toggleModuleSelection(mod.id)}
+                            className={`p-6 rounded-2xl border-2 text-left transition-all flex flex-col justify-between h-32 ${selectedModuleIds.includes(mod.id) ? 'border-indigo-500 bg-indigo-50 shadow-indigo-100 shadow-lg' : 'border-slate-200 bg-white hover:border-indigo-200 hover:shadow-md'}`}
                         >
                             <div className="flex justify-between items-center mb-2 w-full">
                                 <span className="font-bold text-indigo-900 uppercase tracking-wider text-xs">Module {mod.id}</span>
-                                <span className="bg-indigo-200 text-indigo-800 text-xs px-2 py-1 rounded-full font-bold">{mod.kanji.length} Kanji</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="bg-indigo-200 text-indigo-800 text-xs px-2 py-1 rounded-full font-bold">{mod.kanji.length} Kanji</span>
+                                    {selectedModuleIds.includes(mod.id) && (
+                                        <span className="text-indigo-600 bg-white rounded-full p-0.5">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                             <h3 className="text-xl font-bold text-slate-800 truncate w-full">{mod.title}</h3>
                         </button>
@@ -449,10 +474,11 @@ const MenuScreen = ({ modules, activeModule, setActiveModule, startStudy }) => {
 
             <div className="flex flex-col items-center gap-4 w-full flex-shrink-0">
                 <button
-                    onClick={startStudy}
-                    className="w-full max-w-sm py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-indigo-200 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                    onClick={startSelected}
+                    disabled={selectedModuleIds.length === 0}
+                    className={`w-full max-w-sm py-4 rounded-xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-2 ${selectedModuleIds.length > 0 ? 'bg-indigo-600 text-white shadow-indigo-200 active:scale-95' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
                 >
-                    <span>Start Module</span>
+                    <span>{selectedModuleIds.length > 0 ? `Start Selected (${selectedModuleIds.length})` : 'Select Modules'}</span>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                 </button>
                 <div className="text-slate-400 text-xs font-bold">
@@ -539,8 +565,16 @@ const StudyCard = ({ activeModule, currentIndex, currentItem, revealAnswer, setR
                     </div>
 
                     <div className="text-center space-y-2 mt-2">
-                        <h2 className="text-3xl font-bold text-indigo-900">{currentItem.meaning}</h2>
-                        <p className="text-indigo-600/60 text-base">{currentItem.description}</p>
+                        <div className="flex flex-col items-center gap-1 mb-2">
+                            <span className="text-xs text-indigo-400 font-bold uppercase tracking-wider">Readings</span>
+                            <div className="flex flex-col gap-1">
+                                <div className="text-2xl font-bold text-indigo-900">{currentItem.on}</div>
+                                <div className="text-2xl font-bold text-indigo-900">{currentItem.kun}</div>
+                            </div>
+                        </div>
+                        <div className="w-16 h-0.5 bg-indigo-100 mx-auto my-2"></div>
+                        <h2 className="text-lg font-bold text-indigo-600/80">{currentItem.meaning}</h2>
+                        <p className="text-sm text-indigo-400">{currentItem.description}</p>
                     </div>
                 </div>
 
@@ -556,8 +590,8 @@ const StudyCard = ({ activeModule, currentIndex, currentItem, revealAnswer, setR
                     </button>
                 </div>
 
-                {/* Details Grid */}
-                <div className="w-full grid grid-cols-2 gap-4 mb-6 px-4">
+                {/* Details Grid - Removed as readings are now main focus */}
+                {/* <div className="w-full grid grid-cols-2 gap-4 mb-6 px-4">
                     <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm text-center">
                         <span className="text-xs text-slate-400 font-bold block mb-1">音読み (Onyomi)</span>
                         <span className="font-bold text-slate-700 text-xl">{currentItem.on}</span>
@@ -566,7 +600,7 @@ const StudyCard = ({ activeModule, currentIndex, currentItem, revealAnswer, setR
                         <span className="text-xs text-slate-400 font-bold block mb-1">訓読み (Kunyomi)</span>
                         <span className="font-bold text-slate-700 text-xl">{currentItem.kun}</span>
                     </div>
-                </div>
+                </div> */}
 
                 {/* Drawing Pad */}
                 <div className="px-4 mb-6 w-full">
@@ -594,7 +628,7 @@ const StudyCard = ({ activeModule, currentIndex, currentItem, revealAnswer, setR
 };
 
 const TestCard = ({ activeModule, currentIndex, currentItem, progress, revealAnswer, setRevealAnswer, handleSelfGrade, exitToMenu }) => {
-    const [testPromptType, setTestPromptType] = useState('meaning'); // 'meaning' or 'reading'
+    const [testPromptType, setTestPromptType] = useState('reading'); // 'meaning' or 'reading'
 
     return (
         <div className="flex-1 w-full flex flex-col items-center pop-in max-w-md mx-auto">
@@ -705,6 +739,7 @@ const TestCard = ({ activeModule, currentIndex, currentItem, progress, revealAns
 // --- Main Application Component ---
 export default function App() {
     const [activeModule, setActiveModule] = useState(MODULES[0]);
+    const [selectedModuleIds, setSelectedModuleIds] = useState([1]); // Default select first module
     const [phase, setPhase] = useState('menu'); // 'menu', 'study', 'test', 'summary'
     const [currentIndex, setCurrentIndex] = useState(0);
     const [revealAnswer, setRevealAnswer] = useState(false);
@@ -713,9 +748,39 @@ export default function App() {
 
     // --- Game Logic ---
 
-    const startStudy = () => {
+    const toggleModuleSelection = (id) => {
+        setSelectedModuleIds(prev => {
+            if (prev.includes(id)) {
+                return prev.filter(mId => mId !== id);
+            } else {
+                return [...prev, id];
+            }
+        });
+    };
+
+    const startSelected = () => {
+        if (selectedModuleIds.length === 0) return;
+
+        // Combine selected modules
+        const selectedModules = MODULES.filter(m => selectedModuleIds.includes(m.id));
+        const combinedKanji = selectedModules.flatMap(m => m.kanji);
+
+        const combinedModule = {
+            id: 'combined',
+            title: selectedModules.length === 1 ? selectedModules[0].title : `Combined Study (${selectedModules.length} Modules)`,
+            kanji: combinedKanji
+        };
+
+        setActiveModule(combinedModule);
         setPhase('study');
         setCurrentIndex(0);
+        setRevealAnswer(false);
+    };
+
+    const launchModule = (module, index) => {
+        setActiveModule(module);
+        setCurrentIndex(index);
+        setPhase('study');
         setRevealAnswer(false);
     };
 
@@ -772,9 +837,10 @@ export default function App() {
                 {phase === 'menu' && (
                     <MenuScreen
                         modules={MODULES}
-                        activeModule={activeModule}
-                        setActiveModule={setActiveModule}
-                        startStudy={startStudy}
+                        selectedModuleIds={selectedModuleIds}
+                        toggleModuleSelection={toggleModuleSelection}
+                        startSelected={startSelected}
+                        launchModule={launchModule}
                     />
                 )}
                 {phase === 'study' && (
