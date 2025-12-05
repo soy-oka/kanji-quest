@@ -1,168 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-// --- Data: N5 Kanji Modules ---
-const MODULES = [
-    {
-        id: 1,
-        title: "N5 Basics: Nature & People",
-        kanji: [
-            { char: "日", on: "にち", kun: "ひ", meaning: "Day / Sun", description: "The sun radical. Represents the sun or a day." },
-            { char: "木", on: "もく", kun: "き", meaning: "Tree", description: "Looks like a tree with branches and roots." },
-            { char: "人", on: "じん", kun: "ひと", meaning: "Person", description: "A person walking, viewed from the side." },
-            { char: "水", on: "すい", kun: "みず", meaning: "Water", description: "Ripples of water flowing in a stream." },
-            { char: "火", on: "か", kun: "ひ", meaning: "Fire", description: "Flames reaching upwards." },
-            { char: "山", on: "さん", kun: "やま", meaning: "Mountain", description: "Three peaks of a mountain range." },
-            { char: "川", on: "せん", kun: "かわ", meaning: "River", description: "Lines representing the flow of a river." },
-            { char: "田", on: "でん", kun: "た", meaning: "Rice Field", description: "A field divided into four sections for irrigation." },
-            { char: "口", on: "こう", kun: "くち", meaning: "Mouth", description: "An open mouth." },
-            { char: "目", on: "もく", kun: "め", meaning: "Eye", description: "An eye with the pupil in the center." }
-        ]
-    },
-    {
-        id: 2,
-        title: "N5 Basics: Numbers 1-10",
-        kanji: [
-            { char: "一", on: "いち", kun: "ひと", meaning: "One", description: "One horizontal line." },
-            { char: "二", on: "に", kun: "ふた", meaning: "Two", description: "Two horizontal lines." },
-            { char: "三", on: "さん", kun: "み", meaning: "Three", description: "Three horizontal lines." },
-            { char: "四", on: "し", kun: "よん", meaning: "Four", description: "A box with legs inside." },
-            { char: "五", on: "ご", kun: "いつ", meaning: "Five", description: "Number 5." },
-            { char: "六", on: "ろく", kun: "む", meaning: "Six", description: "A lid over legs." },
-            { char: "七", on: "しち", kun: "なな", meaning: "Seven", description: "Number 7, looks like an upside down 7 with a slash." },
-            { char: "八", on: "はち", kun: "や", meaning: "Eight", description: "Two lines parting ways." },
-            { char: "九", on: "きゅう", kun: "ここの", meaning: "Nine", description: "Number 9." },
-            { char: "十", on: "じゅう", kun: "とお", meaning: "Ten", description: "A cross shape." }
-        ]
-    },
-    {
-        id: 3,
-        title: "N5 Basics: Directions & Concepts",
-        kanji: [
-            { char: "上", on: "じょう", kun: "うえ", meaning: "Up / Above", description: "A line indicating a position above the ground." },
-            { char: "下", on: "か", kun: "した", meaning: "Down / Below", description: "A line indicating a position below the ground." },
-            { char: "左", on: "さ", kun: "ひだり", meaning: "Left", description: "A hand holding a tool (work)." },
-            { char: "右", on: "う", kun: "みぎ", meaning: "Right", description: "A hand holding a mouth (eating)." },
-            { char: "中", on: "ちゅう", kun: "なか", meaning: "Middle / Inside", description: "A line cutting through the center of a rectangle." },
-            { char: "大", on: "だい", kun: "おお", meaning: "Big", description: "A person stretching their arms out wide." },
-            { char: "小", on: "しょう", kun: "ちい", meaning: "Small", description: "Something small or split." },
-            { char: "本", on: "ほん", kun: "もと", meaning: "Book / Origin", description: "A tree with a mark at the root." },
-            { char: "円", on: "えん", kun: "まる", meaning: "Yen / Circle", description: "A round object or currency." },
-            { char: "年", on: "ねん", kun: "とし", meaning: "Year", description: "Harvest of rice." }
-        ]
-    },
-    {
-        id: 4,
-        title: "N5 Basics: Time & Space",
-        kanji: [
-            { char: "時", on: "じ", kun: "とき", meaning: "Time / Hour", description: "Sun + Temple/Government office (standard)." },
-            { char: "分", on: "ふん", kun: "わ", meaning: "Minute / Part", description: "To split/divide something with a knife." },
-            { char: "半", on: "はん", kun: "なか", meaning: "Half", description: "Three lines divided down the middle." },
-            { char: "今", on: "こん", kun: "いま", meaning: "Now", description: "A roof with a clock pendulum (conceptually)." },
-            { char: "先", on: "せん", kun: "さき", meaning: "Before / Ahead", description: "A person moving ahead of others." },
-            { char: "間", on: "かん", kun: "あいだ", meaning: "Interval / Between", description: "Sun shining through the gates." },
-            { char: "午", on: "ご", kun: "うま", meaning: "Noon", description: "Derived from the pestle radical." },
-            { char: "前", on: "ぜん", kun: "まえ", meaning: "Before / Front", description: "To cut hair/trim before a ceremony." },
-            { char: "後", on: "ご", kun: "あと", meaning: "After / Behind", description: "Moving slowly on a road." },
-            { char: "何", on: "か", kun: "なに", meaning: "What", description: "A person carrying a burden, asking 'what is it?'" }
-        ]
-    },
-    {
-        id: 5,
-        title: "N5 Basics: Actions & Adjectives",
-        kanji: [
-            { char: "行", on: "こう", kun: "い", meaning: "Go", description: "An intersection of roads." },
-            { char: "来", on: "らい", kun: "く", meaning: "Come", description: "A wheat plant (ancient meaning related to coming)." },
-            { char: "食", on: "しょく", kun: "た", meaning: "Eat", description: "A mouth under a roof collecting food." },
-            { char: "飲", on: "いん", kun: "の", meaning: "Drink", description: "Food + Yawning (mouth open)." },
-            { char: "見", on: "けん", kun: "み", meaning: "See", description: "An eye on top of legs." },
-            { char: "聞", on: "ぶん", kun: "き", meaning: "Hear", description: "An ear inside a gate." },
-            { char: "高", on: "こう", kun: "たか", meaning: "Tall / Expensive", description: "A tall tower or building." },
-            { char: "安", on: "あん", kun: "やす", meaning: "Cheap / Safe", description: "A woman under a roof (peaceful)." },
-            { char: "新", on: "しん", kun: "あたら", meaning: "New", description: "Standing up a tree with an axe (freshly cut)." },
-            { char: "古", on: "こ", kun: "ふる", meaning: "Old", description: "Ten mouths (stories passed down generations)." }
-        ]
-    },
-    {
-        id: 6,
-        title: "N5 Basics: School & Study",
-        kanji: [
-            { char: "学", on: "がく", kun: "まな", meaning: "Study / Learn", description: "A child under a roof studying." },
-            { char: "校", on: "こう", kun: "-", meaning: "School", description: "Tree + Intercourse/Association (place to gather)." },
-            { char: "生", on: "せい", kun: "い", meaning: "Life / Student", description: "A plant growing out of the ground." },
-            { char: "文", on: "ぶん", kun: "ふみ", meaning: "Sentence / Writing", description: "A pattern or lines crossing." },
-            { char: "字", on: "じ", kun: "あざ", meaning: "Character / Letter", description: "A child under a roof (learning characters)." },
-            { char: "語", on: "ご", kun: "かた", meaning: "Language / Word", description: "Words (speech) + I/Myself (five mouths)." },
-            { char: "読", on: "どく", kun: "よ", meaning: "Read", description: "Words + Sell (reading aloud)." },
-            { char: "書", on: "しょ", kun: "か", meaning: "Write", description: "A hand holding a brush." },
-            { char: "名", on: "めい", kun: "な", meaning: "Name", description: "Evening + Mouth (saying name in the dark)." },
-            { char: "友", on: "ゆう", kun: "とも", meaning: "Friend", description: "Two hands helping each other." }
-        ]
-    },
-    {
-        id: 7,
-        title: "N5 Basics: Time & Nature",
-        kanji: [
-            { char: "月", on: "げつ", kun: "つき", meaning: "Moon / Month", description: "A crescent moon." },
-            { char: "金", on: "きん", kun: "かね", meaning: "Gold / Money", description: "Metal/Gold buried in the earth." },
-            { char: "土", on: "ど", kun: "つち", meaning: "Earth / Soil", description: "A sprout growing from the ground." },
-            { char: "週", on: "しゅう", kun: "-", meaning: "Week", description: "Road + Circumference (cycle of days)." },
-            { char: "毎", on: "まい", kun: "-", meaning: "Every", description: "Person + Mother (concept of frequency)." },
-            { char: "夕", on: "せき", kun: "ゆう", meaning: "Evening", description: "A crescent moon (early evening)." },
-            { char: "空", on: "くう", kun: "そら", meaning: "Sky / Empty", description: "Roof + Legs (space under roof)." },
-            { char: "雨", on: "う", kun: "あめ", meaning: "Rain", description: "Water drops falling from a cloud." },
-            { char: "天", on: "てん", kun: "あま", meaning: "Heaven", description: "A person with a line above (sky)." },
-            { char: "気", on: "き", kun: "-", meaning: "Spirit / Air", description: "Steam rising from rice." }
-        ]
-    },
-    {
-        id: 8,
-        title: "N5 Basics: Family & People",
-        kanji: [
-            { char: "父", on: "ふ", kun: "ちち", meaning: "Father", description: "Hand holding a stone axe (authority)." },
-            { char: "母", on: "ぼ", kun: "はは", meaning: "Mother", description: "Woman with breasts (nursing)." },
-            { char: "子", on: "し", kun: "こ", meaning: "Child", description: "A baby with a large head." },
-            { char: "男", on: "だん", kun: "おとこ", meaning: "Man", description: "Rice field + Power (working in fields)." },
-            { char: "女", on: "じょ", kun: "おんな", meaning: "Woman", description: "A kneeling woman." },
-            { char: "兄", on: "きょう", kun: "あに", meaning: "Older Brother", description: "Mouth + Legs (speaking for the family)." },
-            { char: "弟", on: "だい", kun: "おとうと", meaning: "Younger Brother", description: "A stick wrapped with string (order)." },
-            { char: "姉", on: "し", kun: "あね", meaning: "Older Sister", description: "Woman + Market (city)." },
-            { char: "妹", on: "まい", kun: "いもうと", meaning: "Younger Sister", description: "Woman + Not yet (immature)." },
-            { char: "自", on: "じ", kun: "みずか", meaning: "Self", description: "A nose (pointing to oneself)." }
-        ]
-    },
-    {
-        id: 9,
-        title: "N5 Basics: Adjectives & Colors",
-        kanji: [
-            { char: "白", on: "はく", kun: "しろ", meaning: "White", description: "A sun rising (white light)." },
-            { char: "黒", on: "こく", kun: "くろ", meaning: "Black", description: "Soot from a fire." },
-            { char: "赤", on: "せき", kun: "あか", meaning: "Red", description: "Big + Fire (raging fire)." },
-            { char: "青", on: "せい", kun: "あお", meaning: "Blue", description: "Plant growing from a well (fresh color)." },
-            { char: "多", on: "た", kun: "おお", meaning: "Many", description: "Two moons (many nights)." },
-            { char: "少", on: "しょう", kun: "すく", meaning: "Few", description: "Small + Slash (whittled down)." },
-            { char: "長", on: "ちょう", kun: "なが", meaning: "Long", description: "Hair growing long." },
-            { char: "広", on: "こう", kun: "ひろ", meaning: "Wide", description: "A building on a cliff (spacious)." },
-            { char: "早", on: "そう", kun: "はや", meaning: "Early", description: "Sun + Ten (morning time)." },
-            { char: "近", on: "きん", kun: "ちか", meaning: "Near", description: "Road + Axe (cutting distance)." }
-        ]
-    },
-    {
-        id: 10,
-        title: "N5 Basics: Verbs & Actions",
-        kanji: [
-            { char: "買", on: "ばい", kun: "か", meaning: "Buy", description: "Net + Shell (money)." },
-            { char: "言", on: "げん", kun: "い", meaning: "Say", description: "Words coming from a mouth." },
-            { char: "話", on: "わ", kun: "はな", meaning: "Speak", description: "Words + Tongue." },
-            { char: "立", on: "りつ", kun: "た", meaning: "Stand", description: "A person standing on the ground." },
-            { char: "休", on: "きゅう", kun: "やす", meaning: "Rest", description: "Person leaning on a tree." },
-            { char: "会", on: "かい", kun: "あ", meaning: "Meet", description: "People gathering under a roof." },
-            { char: "出", on: "しゅつ", kun: "で", meaning: "Exit", description: "A plant growing out of the ground." },
-            { char: "入", on: "にゅう", kun: "はい", meaning: "Enter", description: "Roots entering the ground." },
-            { char: "売", on: "ばい", kun: "う", meaning: "Sell", description: "Samurai + Legs (merchant)." },
-            { char: "待", on: "たい", kun: "ま", meaning: "Wait", description: "Road + Temple (waiting at temple)." }
-        ]
-    }
-];
+import { MODULES } from './data/modules';
+import { HIRAGANA_MODULE, KATAKANA_MODULE } from './data/kana';
+
 
 // --- Styles ---
 const styles = `
@@ -201,7 +41,7 @@ const styles = `
     .stroke-order-svg path {
         stroke-dasharray: 500;
         stroke-dashoffset: 500;
-        animation: drawStroke 1.5s ease-out forwards;
+        animation: drawStroke 1.0s ease-out forwards;
     }
 `;
 
@@ -223,7 +63,7 @@ const StrokeOrderViewer = ({ char, className = "" }) => {
                     let delay = 0;
                     text = text.replace(/<path/g, () => {
                         const currentDelay = delay;
-                        delay += 0.5; // 0.5s delay between strokes
+                        delay += 0.6; // 0.6s delay between strokes (sequential)
                         return `<path style="animation-delay: ${currentDelay}s"`;
                     });
                     setSvgContent(text);
@@ -252,18 +92,23 @@ const StrokeOrderViewer = ({ char, className = "" }) => {
 };
 
 // --- Component: Drawing Pad ---
+// --- Component: Drawing Pad ---
 const DrawingPad = () => {
     const canvasRef = useRef(null);
     const [isDrawing, setIsDrawing] = useState(false);
+    const [trackpadMode, setTrackpadMode] = useState(false);
 
     useEffect(() => {
         const canvas = canvasRef.current;
-        // Set actual canvas size to match display size for sharp rendering
         const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
+        const dpr = window.devicePixelRatio || 1;
+
+        // Set actual canvas size to match display size * pixel ratio for sharp rendering
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
 
         const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr); // Scale all drawing operations by dpr
         ctx.strokeStyle = '#334155'; // slate-700
         ctx.lineWidth = 4;
         ctx.lineCap = 'round';
@@ -285,9 +130,23 @@ const DrawingPad = () => {
         e.preventDefault(); // Prevent scrolling on touch
         const { x, y } = getPos(e);
         const ctx = canvasRef.current.getContext('2d');
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        setIsDrawing(true);
+
+        if (trackpadMode) {
+            // Toggle drawing state
+            if (!isDrawing) {
+                setIsDrawing(true);
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+            } else {
+                setIsDrawing(false);
+                ctx.closePath();
+            }
+        } else {
+            // Standard drag to draw
+            setIsDrawing(true);
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
     };
 
     const draw = (e) => {
@@ -300,20 +159,30 @@ const DrawingPad = () => {
     };
 
     const stopDrawing = () => {
-        setIsDrawing(false);
+        if (!trackpadMode) {
+            setIsDrawing(false);
+        }
     };
 
     const clearCanvas = () => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
+        // Clear using the scaled dimensions
+        ctx.clearRect(0, 0, canvas.width / (window.devicePixelRatio || 1), canvas.height / (window.devicePixelRatio || 1));
+        // Note: clearRect uses the coordinate system, so we divide by dpr if we want to clear using logical coords, 
+        // OR just clear the whole raw width/height.
+        // Easier:
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
     };
 
     return (
         <div className="relative w-full h-48 md:h-64 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 touch-none overflow-hidden group">
             <canvas
                 ref={canvasRef}
-                className="w-full h-full cursor-crosshair"
+                className={`w-full h-full ${trackpadMode ? 'cursor-crosshair' : 'cursor-default'}`}
                 onMouseDown={startDrawing}
                 onMouseMove={draw}
                 onMouseUp={stopDrawing}
@@ -322,14 +191,35 @@ const DrawingPad = () => {
                 onTouchMove={draw}
                 onTouchEnd={stopDrawing}
             />
-            <button
-                onClick={clearCanvas}
-                className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur rounded-lg shadow-sm text-slate-400 hover:text-red-500 transition-colors border border-slate-200"
-                title="Clear"
-            >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-            </button>
-            <div className="absolute bottom-3 left-3 text-xs font-bold text-slate-300 pointer-events-none uppercase tracking-wider">Practice Area</div>
+
+            {/* Controls Container */}
+            <div className="absolute top-3 right-3 flex gap-2">
+                {/* Trackpad Mode Toggle */}
+                <button
+                    onClick={() => {
+                        setTrackpadMode(!trackpadMode);
+                        setIsDrawing(false); // Reset drawing state when switching
+                    }}
+                    className={`p-2 rounded-lg shadow-sm border transition-colors ${trackpadMode ? 'bg-indigo-100 text-indigo-600 border-indigo-200' : 'bg-white/90 text-slate-400 border-slate-200 hover:text-slate-600'}`}
+                    title={trackpadMode ? "Trackpad Mode On (Click to start/stop)" : "Trackpad Mode Off (Drag to draw)"}
+                >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
+                </button>
+
+                {/* Clear Button */}
+                <button
+                    onClick={clearCanvas}
+                    className="p-2 bg-white/90 backdrop-blur rounded-lg shadow-sm text-slate-400 hover:text-red-500 transition-colors border border-slate-200"
+                    title="Clear"
+                >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+            </div>
+
+            <div className="absolute bottom-3 left-3 text-xs font-bold text-slate-300 pointer-events-none uppercase tracking-wider flex items-center gap-2">
+                <span>Practice Area</span>
+                {trackpadMode && <span className="bg-indigo-100 text-indigo-500 px-1.5 py-0.5 rounded text-[10px]">Trackpad Mode</span>}
+            </div>
         </div>
     );
 };
@@ -341,10 +231,217 @@ const DrawingPad = () => {
 
 import * as wanakana from 'wanakana';
 
-const MenuScreen = ({ modules, selectedModuleIds, toggleModuleSelection, startSelected, launchModule }) => {
+// --- Component: Module Overview (Landing Page) ---
+const ModuleOverview = ({ module, onStart, onBack }) => {
+    return (
+        <div className="flex-1 flex flex-col h-full pop-in overflow-hidden relative">
+            {/* Header */}
+            <div className="p-6 pb-2 flex items-center gap-4 border-b border-slate-100 bg-white/50 backdrop-blur z-10">
+                <button
+                    onClick={onBack}
+                    className="p-2 -ml-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <h2 className="text-2xl font-bold text-slate-800 truncate flex-1">{module.title}</h2>
+            </div>
+
+            {/* Content Scroll Area */}
+            <div className="flex-1 overflow-y-auto p-6">
+                <div className="max-w-4xl mx-auto">
+                    <div className="mb-8">
+                        <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Module Contents</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                            {module.kanji.map((k, i) => (
+                                <div key={i} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex flex-col items-center gap-1">
+                                    <div className="text-4xl font-kanji text-slate-800 mb-1">{k.char}</div>
+                                    <div className="text-xs font-bold text-indigo-600 text-center line-clamp-1">{k.on}</div>
+                                    <div className="text-xs font-bold text-slate-500 text-center line-clamp-1">{k.kun}</div>
+                                    <div className="text-[10px] font-bold text-slate-400 text-center line-clamp-1 mt-1 border-t border-slate-100 pt-1 w-full">{k.meaning}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="p-6 border-t border-slate-100 bg-white z-10 flex justify-center">
+                <button
+                    onClick={() => onStart(module)}
+                    className="w-full max-w-sm py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                >
+                    <span>Start Module</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                </button>
+            </div>
+        </div>
+    );
+};
+
+// --- Component: Custom Test Modal ---
+const CustomTestModal = ({ modules, onClose, onStart }) => {
+    const [selectedIds, setSelectedIds] = useState([]);
+
+    const toggleSelection = (id) => {
+        setSelectedIds(prev =>
+            prev.includes(id) ? prev.filter(pid => pid !== id) : [...prev, id]
+        );
+    };
+
+    const handleStart = () => {
+        if (selectedIds.length === 0) return;
+        onStart(selectedIds);
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col max-h-[80vh] pop-in" onClick={e => e.stopPropagation()}>
+                <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+                    <h3 className="text-2xl font-bold text-slate-800">Create Custom Test</h3>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <div className="p-6 overflow-y-auto flex-1">
+                    <p className="text-slate-500 mb-4">Select modules to include in your test:</p>
+                    <div className="space-y-3">
+                        {modules.map(mod => (
+                            <label key={mod.id} className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
+                                <input
+                                    type="checkbox"
+                                    checked={selectedIds.includes(mod.id)}
+                                    onChange={() => toggleSelection(mod.id)}
+                                    className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300"
+                                />
+                                <div className="flex-1">
+                                    <div className="font-bold text-slate-800">{mod.title}</div>
+                                    <div className="text-xs text-slate-400">{mod.kanji.length} Kanji</div>
+                                </div>
+                            </label>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="p-6 border-t border-slate-100 bg-slate-50 rounded-b-3xl flex justify-between items-center">
+                    <div className="text-sm font-bold text-slate-500">
+                        {selectedIds.length} Selected
+                    </div>
+                    <button
+                        onClick={handleStart}
+                        disabled={selectedIds.length === 0}
+                        className={`px-6 py-3 rounded-xl font-bold shadow-lg transition-all ${selectedIds.length > 0 ? 'bg-indigo-600 text-white shadow-indigo-200 active:scale-95' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+                    >
+                        Start Test
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- Component: Statistics Modal ---
+const StatsModal = ({ stats, onClose }) => {
+    const accuracy = stats.totalReviews > 0 ? Math.round((stats.correctReviews / stats.totalReviews) * 100) : 0;
+
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+            <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl pop-in" onClick={e => e.stopPropagation()}>
+                <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+                    <h3 className="text-2xl font-bold text-slate-800">Your Statistics</h3>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <div className="p-6 grid grid-cols-2 gap-4">
+                    <div className="bg-indigo-50 p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
+                        <div className="text-4xl font-bold text-indigo-600">{stats.totalReviews}</div>
+                        <div className="text-xs font-bold text-indigo-400 uppercase tracking-wider">Total Reviews</div>
+                    </div>
+                    <div className="bg-green-50 p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
+                        <div className="text-4xl font-bold text-green-600">{accuracy}%</div>
+                        <div className="text-xs font-bold text-green-400 uppercase tracking-wider">Accuracy</div>
+                    </div>
+                    <div className="bg-amber-50 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 col-span-2">
+                        <div className="text-4xl font-bold text-amber-600">{stats.modulesCompleted}</div>
+                        <div className="text-xs font-bold text-amber-400 uppercase tracking-wider">Modules Completed</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- Component: Settings Modal ---
+const SettingsModal = ({ onClose }) => {
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+            <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl pop-in" onClick={e => e.stopPropagation()}>
+                <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+                    <h3 className="text-2xl font-bold text-slate-800">Settings</h3>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <div className="p-6 space-y-6">
+                    <div>
+                        <h4 className="text-sm font-bold text-slate-900 mb-2">About App</h4>
+                        <p className="text-slate-600 text-sm leading-relaxed">
+                            KanjiCraft is designed to help you master Japanese handwriting through spaced repetition and stroke order practice.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4 className="text-sm font-bold text-slate-900 mb-2">Credits</h4>
+                        <div className="p-4 bg-slate-50 rounded-xl text-xs text-slate-500 space-y-2">
+                            <p>
+                                <strong>Stroke Order Data:</strong><br />
+                                This application uses data from the <a href="https://kanjivg.tagaini.net/" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:underline">KanjiVG</a> project.
+                            </p>
+                            <p className="italic">
+                                "Kanji strokes data is provided by generic KanjiVG project under Creative Commons Attribution-Share Alike 3.0 license."
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="text-center text-xs text-slate-300 font-mono pt-4 border-t border-slate-100">
+                        v1.0.0 • Build 2025.12
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- Component: Menu Screen ---
+const MenuScreen = ({ modules, launchModule, onViewModule, onStartCustom, userStats }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [lookupResult, setLookupResult] = useState(null);
     const [notFound, setNotFound] = useState(false);
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [showCustomModal, setShowCustomModal] = useState(false);
+    const [showStatsModal, setShowStatsModal] = useState(false);
+    const [showSettingsModal, setShowSettingsModal] = useState(false);
+    const dropdownRef = useRef(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleKanaSelect = (module) => {
+        setShowDropdown(false);
+        onViewModule(module);
+    };
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -383,9 +480,6 @@ const MenuScreen = ({ modules, selectedModuleIds, toggleModuleSelection, startSe
                 setLookupResult({ char: term, module: null, index: null });
                 return;
             }
-            // If it's romaji/kana that didn't match a module, maybe convert to kanji? 
-            // Without a dictionary API, we can't easily convert "neko" -> "猫" if it's not in our modules.
-            // So we assume if it didn't match a module, and it's not a single char input, it's not found.
         }
 
         setNotFound(true);
@@ -393,28 +487,123 @@ const MenuScreen = ({ modules, selectedModuleIds, toggleModuleSelection, startSe
     };
 
     return (
-        <div className="flex-1 flex flex-col items-center p-6 space-y-8 pop-in w-full h-full overflow-hidden">
-            <div className="text-center space-y-2 flex-shrink-0">
+        <div className="flex-1 flex flex-col items-center p-6 space-y-8 pop-in w-full h-full overflow-hidden relative">
+            {/* Top Right Menu */}
+            <div className="absolute top-6 right-6 z-20" ref={dropdownRef}>
+                <button
+                    onClick={() => setShowDropdown(!showDropdown)}
+                    className="p-2 bg-white rounded-xl shadow-sm border border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-200 transition-colors"
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+                </button>
+
+                {showDropdown && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden pop-in origin-top-right">
+                        <div className="p-2 space-y-1">
+                            {/* Search Search */}
+                            <form onSubmit={(e) => { handleSearch(e); setShowDropdown(false); }} className="px-2 pt-2 pb-2">
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        placeholder="Search..."
+                                        className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 focus:border-indigo-500 outline-none bg-slate-50 transition-all focus:bg-white"
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
+                                    <svg className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                </div>
+                            </form>
+
+                            <div className="h-px bg-slate-100 my-1"></div>
+
+                            <button
+                                onClick={() => {
+                                    setShowDropdown(false);
+                                    setShowCustomModal(true);
+                                }}
+                                className="w-full text-left px-4 py-2 rounded-lg text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 font-bold text-sm flex items-center gap-2"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                                Custom Test
+                            </button>
+                            <button
+                                onClick={() => handleKanaSelect(HIRAGANA_MODULE)}
+                                className="w-full text-left px-4 py-2 rounded-lg text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 font-bold text-sm flex items-center gap-2"
+                            >
+                                <span className="w-4 text-center font-serif">あ</span>
+                                Hiragana Guide
+                            </button>
+                            <button
+                                onClick={() => handleKanaSelect(KATAKANA_MODULE)}
+                                className="w-full text-left px-4 py-2 rounded-lg text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 font-bold text-sm flex items-center gap-2"
+                            >
+                                <span className="w-4 text-center font-serif">ア</span>
+                                Katakana Guide
+                            </button>
+
+                            <div className="h-px bg-slate-100 my-1"></div>
+
+                            <button
+                                onClick={() => { setShowDropdown(false); setShowStatsModal(true); }}
+                                className="w-full text-left px-4 py-2 rounded-lg text-slate-500 hover:bg-slate-50 font-bold text-sm flex items-center gap-2"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                                Statistics
+                            </button>
+                            <button
+                                onClick={() => { setShowDropdown(false); setShowSettingsModal(true); }}
+                                className="w-full text-left px-4 py-2 rounded-lg text-slate-500 hover:bg-slate-50 font-bold text-sm flex items-center gap-2"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                Settings
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Custom Test Modal */}
+            {showCustomModal && (
+                <CustomTestModal
+                    modules={modules}
+                    onClose={() => setShowCustomModal(false)}
+                    onStart={(selectedIds) => {
+                        setShowCustomModal(false);
+                        onStartCustom(selectedIds);
+                    }}
+                />
+            )}
+
+            {showStatsModal && <StatsModal stats={userStats} onClose={() => setShowStatsModal(false)} />}
+            {showSettingsModal && <SettingsModal onClose={() => setShowSettingsModal(false)} />}
+
+            <div className="text-center space-y-2 flex-shrink-0 mt-8">
                 <h1 className="text-4xl font-bold text-slate-800">KanjiCraft</h1>
                 <p className="text-slate-500">Learn to write Japanese characters by hand!</p>
             </div>
 
-            {/* Quick Lookup */}
-            <form onSubmit={handleSearch} className="w-full max-w-sm flex flex-col gap-2 flex-shrink-0 relative">
-                <div className="flex gap-2">
-                    <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Lookup (e.g. 猫, neko, water)"
-                        className={`flex-1 p-3 rounded-xl border-2 outline-none transition-colors font-kanji text-lg ${notFound ? 'border-red-300 bg-red-50' : 'border-slate-200 focus:border-indigo-500'}`}
-                    />
-                    <button type="submit" className="p-3 bg-indigo-100 text-indigo-600 rounded-xl font-bold hover:bg-indigo-200 transition-colors">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                    </button>
+            {/* Hero / Daily Goal Section */}
+            <div className="w-full max-w-sm bg-indigo-500 text-white p-6 rounded-3xl shadow-lg shadow-indigo-200 mb-2 flex items-center justify-between relative overflow-hidden group hover:scale-[1.02] transition-transform cursor-default">
+                <div className="relative z-10">
+                    <div className="text-indigo-200 text-xs font-bold uppercase tracking-wider mb-1">Total Reviews</div>
+                    <div className="text-3xl font-bold">{userStats.totalReviews}</div>
+                    <div className="text-indigo-100 text-sm font-medium">Accuracy: {userStats.totalReviews > 0 ? Math.round((userStats.correctReviews / userStats.totalReviews) * 100) : 0}%</div>
                 </div>
-                {notFound && <div className="absolute -bottom-6 left-0 text-xs text-red-500 font-bold ml-2">Not found in modules</div>}
-            </form>
+                <div className="relative z-10 w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
+                    <span className="text-xl font-bold">0%</span>
+                </div>
+                {/* Decorative Circles */}
+                <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"></div>
+                <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-indigo-400/50 rounded-full blur-xl"></div>
+            </div>
+
+            {/* Search error toast */}
+            {notFound && (
+                <div className="absolute top-24 z-50 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg font-bold text-sm pop-in">
+                    Kanji not found in modules
+                </div>
+            )}
 
             {/* Lookup Modal */}
             {lookupResult && (
@@ -448,23 +637,16 @@ const MenuScreen = ({ modules, selectedModuleIds, toggleModuleSelection, startSe
             )}
 
             <div className="w-full flex-1 overflow-y-auto pr-2">
-                <div className="flex flex-col gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 max-w-sm md:max-w-5xl mx-auto">
+                <div className="flex flex-col gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 max-w-sm md:max-w-5xl mx-auto pb-6">
                     {modules.map(mod => (
                         <button
                             key={mod.id}
-                            onClick={() => toggleModuleSelection(mod.id)}
-                            className={`p-6 rounded-2xl border-2 text-left transition-all flex flex-col justify-between h-32 ${selectedModuleIds.includes(mod.id) ? 'border-indigo-500 bg-indigo-50 shadow-indigo-100 shadow-lg' : 'border-slate-200 bg-white hover:border-indigo-200 hover:shadow-md'}`}
+                            onClick={() => onViewModule(mod)}
+                            className="p-6 rounded-2xl border-2 border-slate-200 bg-white hover:border-indigo-200 hover:shadow-md transition-all flex flex-col justify-between h-32 text-left group"
                         >
                             <div className="flex justify-between items-center mb-2 w-full">
                                 <span className="font-bold text-indigo-900 uppercase tracking-wider text-xs">Module {mod.id}</span>
-                                <div className="flex items-center gap-2">
-                                    <span className="bg-indigo-200 text-indigo-800 text-xs px-2 py-1 rounded-full font-bold">{mod.kanji.length} Kanji</span>
-                                    {selectedModuleIds.includes(mod.id) && (
-                                        <span className="text-indigo-600 bg-white rounded-full p-0.5">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                        </span>
-                                    )}
-                                </div>
+                                <span className="bg-indigo-50 text-indigo-600 text-xs px-2 py-1 rounded-full font-bold group-hover:bg-indigo-100 transition-colors">{mod.kanji.length} Kanji</span>
                             </div>
                             <h3 className="text-xl font-bold text-slate-800 truncate w-full">{mod.title}</h3>
                         </button>
@@ -472,18 +654,8 @@ const MenuScreen = ({ modules, selectedModuleIds, toggleModuleSelection, startSe
                 </div>
             </div>
 
-            <div className="flex flex-col items-center gap-4 w-full flex-shrink-0">
-                <button
-                    onClick={startSelected}
-                    disabled={selectedModuleIds.length === 0}
-                    className={`w-full max-w-sm py-4 rounded-xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-2 ${selectedModuleIds.length > 0 ? 'bg-indigo-600 text-white shadow-indigo-200 active:scale-95' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
-                >
-                    <span>{selectedModuleIds.length > 0 ? `Start Selected (${selectedModuleIds.length})` : 'Select Modules'}</span>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                </button>
-                <div className="text-slate-400 text-xs font-bold">
-                    (C) Simon Danielsson, 2025
-                </div>
+            <div className="text-slate-400 text-xs font-bold flex-shrink-0">
+                (C) Simon Danielsson, 2025
             </div>
         </div>
     );
@@ -739,49 +911,24 @@ const TestCard = ({ activeModule, currentIndex, currentItem, progress, revealAns
 // --- Main Application Component ---
 export default function App() {
     const [activeModule, setActiveModule] = useState(MODULES[0]);
-    const [selectedModuleIds, setSelectedModuleIds] = useState([1]); // Default select first module
+
     const [phase, setPhase] = useState('menu'); // 'menu', 'study', 'test', 'summary'
     const [currentIndex, setCurrentIndex] = useState(0);
     const [revealAnswer, setRevealAnswer] = useState(false);
     const [score, setScore] = useState(0);
     const [results, setResults] = useState([]);
+    const [viewingModule, setViewingModule] = useState(null); // New state for landing page
 
     // --- Game Logic ---
 
-    const toggleModuleSelection = (id) => {
-        setSelectedModuleIds(prev => {
-            if (prev.includes(id)) {
-                return prev.filter(mId => mId !== id);
-            } else {
-                return [...prev, id];
-            }
-        });
-    };
 
-    const startSelected = () => {
-        if (selectedModuleIds.length === 0) return;
-
-        // Combine selected modules
-        const selectedModules = MODULES.filter(m => selectedModuleIds.includes(m.id));
-        const combinedKanji = selectedModules.flatMap(m => m.kanji);
-
-        const combinedModule = {
-            id: 'combined',
-            title: selectedModules.length === 1 ? selectedModules[0].title : `Combined Study (${selectedModules.length} Modules)`,
-            kanji: combinedKanji
-        };
-
-        setActiveModule(combinedModule);
-        setPhase('study');
-        setCurrentIndex(0);
-        setRevealAnswer(false);
-    };
 
     const launchModule = (module, index) => {
         setActiveModule(module);
         setCurrentIndex(index);
         setPhase('study');
         setRevealAnswer(false);
+        setViewingModule(null);
     };
 
     const startTest = () => {
@@ -819,28 +966,90 @@ export default function App() {
         nextCard();
     };
 
+    const [userStats, setUserStats] = useState(() => {
+        const saved = localStorage.getItem('kanjiQuestStats');
+        return saved ? JSON.parse(saved) : { totalReviews: 0, correctReviews: 0, modulesCompleted: 0 };
+    });
+
+    useEffect(() => {
+        localStorage.setItem('kanjiQuestStats', JSON.stringify(userStats));
+    }, [userStats]);
+
+    // Handle Module Completion & Stats Update
+    const finishModule = () => {
+        const score = results.filter(r => r.correct).length;
+        const total = activeModule.kanji.length;
+
+        // Update stats
+        setUserStats(prev => ({
+            totalReviews: prev.totalReviews + total,
+            correctReviews: prev.correctReviews + score,
+            modulesCompleted: prev.modulesCompleted + 1
+        }));
+
+        setPhase('summary');
+    };
+
     const exitToMenu = () => {
         setPhase('menu');
         setCurrentIndex(0);
         setResults([]);
         setScore(0);
+        setViewingModule(null);
     };
 
-    const currentItem = activeModule.kanji[currentIndex];
-    const progress = ((currentIndex) / activeModule.kanji.length) * 100;
+    const startCustomTest = (ids) => {
+        const selectedModules = MODULES.filter(m => ids.includes(m.id));
+        const combinedKanji = selectedModules.flatMap(m => m.kanji);
+
+        const combinedModule = {
+            id: 'custom',
+            title: `Custom Test (${selectedModules.length} Modules)`,
+            kanji: combinedKanji
+        };
+
+        setActiveModule(combinedModule);
+        setPhase('study');
+        setCurrentIndex(0);
+        setResults([]);
+        setScore(0);
+        setRevealAnswer(false);
+        setViewingModule(null);
+    };
+
+    const startStudy = () => {
+        setPhase('study');
+        setCurrentIndex(0);
+        setResults([]);
+        setScore(0);
+        setRevealAnswer(false);
+    };
+
+
+
+    // Calculate Progress
+    const progress = activeModule ? Math.round(((currentIndex) / activeModule.kanji.length) * 100) : 0;
+    const currentItem = activeModule ? activeModule.kanji[currentIndex] : null;
 
     // --- Main UI Router ---
     return (
-        <div className="min-h-screen w-full bg-slate-50 font-fredoka text-slate-800 flex justify-center items-center md:p-8">
+        <div className="h-screen w-screen bg-white overflow-hidden font-fredoka text-slate-800">
             <style>{styles}</style>
-            <div className="w-full max-w-md md:max-w-7xl md:h-[85vh] md:rounded-3xl bg-white shadow-2xl min-h-screen md:min-h-0 flex flex-col relative overflow-hidden transition-all duration-500">
-                {phase === 'menu' && (
+            <div className="w-full h-full flex flex-col relative overflow-hidden transition-all duration-500">
+                {phase === 'menu' && !viewingModule && (
                     <MenuScreen
                         modules={MODULES}
-                        selectedModuleIds={selectedModuleIds}
-                        toggleModuleSelection={toggleModuleSelection}
-                        startSelected={startSelected}
                         launchModule={launchModule}
+                        onViewModule={setViewingModule}
+                        onStartCustom={startCustomTest}
+                        userStats={userStats}
+                    />
+                )}
+                {phase === 'menu' && viewingModule && (
+                    <ModuleOverview
+                        module={viewingModule}
+                        onStart={(m) => launchModule(m, 0)}
+                        onBack={() => setViewingModule(null)}
                     />
                 )}
                 {phase === 'study' && (
