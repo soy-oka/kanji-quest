@@ -3,16 +3,16 @@ export const MODULES = [
         id: 1,
         title: "N5 Basics: Nature & People",
         kanji: [
-            { char: "日", on: "にち", kun: "ひ", meaning: "Day / Sun", description: "The sun radical. Represents the sun or a day." },
-            { char: "木", on: "もく", kun: "き", meaning: "Tree", description: "Looks like a tree with branches and roots." },
-            { char: "人", on: "じん", kun: "ひと", meaning: "Person", description: "A person walking, viewed from the side." },
-            { char: "水", on: "すい", kun: "みず", meaning: "Water", description: "Ripples of water flowing in a stream." },
-            { char: "火", on: "か", kun: "ひ", meaning: "Fire", description: "Flames reaching upwards." },
-            { char: "山", on: "さん", kun: "やま", meaning: "Mountain", description: "Three peaks of a mountain range." },
-            { char: "川", on: "せん", kun: "かわ", meaning: "River", description: "Lines representing the flow of a river." },
-            { char: "田", on: "でん", kun: "た", meaning: "Rice Field", description: "A field divided into four sections for irrigation." },
-            { char: "口", on: "こう", kun: "くち", meaning: "Mouth", description: "An open mouth." },
-            { char: "目", on: "もく", kun: "め", meaning: "Eye", description: "An eye with the pupil in the center." }
+            { char: "日", on: "にち", kun: "ひ", meaning: "Day / Sun", description: "The sun radical. Represents the sun or a day.", examples: [{ word: "日本", reading: "にほん", meaning: "Japan" }] },
+            { char: "木", on: "もく", kun: "き", meaning: "Tree", description: "Looks like a tree with branches and roots.", examples: [{ word: "木曜日", reading: "もくようび", meaning: "Thursday" }] },
+            { char: "人", on: "じん", kun: "ひと", meaning: "Person", description: "A person walking, viewed from the side.", examples: [{ word: "日本人", reading: "にほんじん", meaning: "Japanese Person" }] },
+            { char: "水", on: "すい", kun: "みず", meaning: "Water", description: "Ripples of water flowing in a stream.", examples: [{ word: "水曜日", reading: "すいようび", meaning: "Wednesday" }] },
+            { char: "火", on: "か", kun: "ひ", meaning: "Fire", description: "Flames reaching upwards.", examples: [{ word: "火曜日", reading: "かようび", meaning: "Tuesday" }] },
+            { char: "山", on: "さん", kun: "やま", meaning: "Mountain", description: "Three peaks of a mountain range.", examples: [{ word: "富士山", reading: "ふじさん", meaning: "Mt. Fuji" }] },
+            { char: "川", on: "せん", kun: "かわ", meaning: "River", description: "Lines representing the flow of a river.", examples: [{ word: "小川", reading: "おがわ", meaning: "Brook / Stream" }] },
+            { char: "田", on: "でん", kun: "た", meaning: "Rice Field", description: "A field divided into four sections for irrigation.", examples: [{ word: "水田", reading: "すいでん", meaning: "Rice paddy" }] },
+            { char: "口", on: "こう", kun: "くち", meaning: "Mouth", description: "An open mouth.", examples: [{ word: "出口", reading: "でぐち", meaning: "Exit" }] },
+            { char: "目", on: "もく", kun: "め", meaning: "Eye", description: "An eye with the pupil in the center.", examples: [{ word: "目的", reading: "もくてき", meaning: "Purpose / Goal" }] }
         ]
     },
     {

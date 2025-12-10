@@ -14,6 +14,13 @@ const styles = `
     .stroke-order-svg {
         width: 100%;
         height: 100%;
+        display: flex; /* Centering */
+        align-items: center;
+        justify-content: center;
+    }
+    .stroke-order-svg svg {
+        width: 100%;
+        height: 100%;
     }
     .stroke-order-svg path {
         fill: none;
@@ -47,7 +54,7 @@ const styles = `
 
 // --- Component: Stroke Order Viewer (KanjiVG) ---
 // --- Component: Stroke Order Viewer (KanjiVG) ---
-const StrokeOrderViewer = ({ char, className = "" }) => {
+const StrokeOrderViewer = ({ char, className = "", minimalist = false }) => {
     const [svgContent, setSvgContent] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -85,7 +92,7 @@ const StrokeOrderViewer = ({ char, className = "" }) => {
 
     return (
         <div
-            className={`border-4 border-slate-100 rounded-3xl bg-white p-4 shadow-inner stroke-order-svg ${className}`}
+            className={`${minimalist ? '' : 'border-4 border-slate-100 rounded-3xl bg-white p-4 shadow-inner'} stroke-order-svg ${className}`}
             dangerouslySetInnerHTML={{ __html: svgContent }}
         />
     );
@@ -179,7 +186,7 @@ const DrawingPad = () => {
     };
 
     return (
-        <div className="relative w-full h-48 md:h-64 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 touch-none overflow-hidden group">
+        <div className="relative w-full h-full bg-transparent touch-none overflow-hidden group">
             <canvas
                 ref={canvasRef}
                 className={`w-full h-full ${trackpadMode ? 'cursor-crosshair' : 'cursor-default'}`}
@@ -267,13 +274,29 @@ const ModuleOverview = ({ module, onStart, onBack }) => {
 
             {/* Footer Actions */}
             <div className="p-6 border-t border-slate-100 bg-white z-10 flex justify-center">
-                <button
-                    onClick={() => onStart(module)}
-                    className="w-full max-w-sm py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 active:scale-95 transition-transform flex items-center justify-center gap-2"
-                >
-                    <span>Start Module</span>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                </button>
+                <div className="w-full max-w-sm flex flex-col gap-3">
+                    <button
+                        onClick={() => onStart(module, 'flashcards')}
+                        className="w-full py-4 bg-amber-500 text-white rounded-xl font-bold shadow-lg shadow-amber-200 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                    >
+                        <span>Learn (Flashcards)</span>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                    </button>
+                    <button
+                        onClick={() => onStart(module, 'study')}
+                        className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                    >
+                        <span>Handwriting Practice</span>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                    </button>
+                    <button
+                        onClick={() => onStart(module, 'test')}
+                        className="w-full py-4 bg-emerald-500 text-white rounded-xl font-bold shadow-lg shadow-emerald-200 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                    >
+                        <span>Test Now</span>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -507,7 +530,7 @@ const MenuScreen = ({ modules, launchModule, onViewModule, onStartCustom, userSt
                                         type="text"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        placeholder="Search..."
+                                        // Reading file to find TestCard definition first.="Search..."
                                         className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 focus:border-indigo-500 outline-none bg-slate-50 transition-all focus:bg-white"
                                         onClick={(e) => e.stopPropagation()}
                                     />
@@ -622,8 +645,8 @@ const MenuScreen = ({ modules, launchModule, onViewModule, onStartCustom, userSt
                         </button>
 
                         <h3 className="text-2xl font-bold text-slate-800">Stroke Order</h3>
-                        <div className="bg-slate-50 rounded-2xl border-2 border-slate-100 p-4">
-                            <StrokeOrderViewer char={lookupResult.char} className="w-48 h-48" />
+                        <div className="bg-slate-50 rounded-2xl border-2 border-slate-100 p-8 flex items-center justify-center">
+                            <StrokeOrderViewer char={lookupResult.char} className="w-48 h-48" minimalist={true} />
                         </div>
                         <div className="text-center">
                             <div className="text-6xl font-kanji text-slate-800 mb-2">{lookupResult.char}</div>
@@ -666,38 +689,49 @@ const MenuScreen = ({ modules, launchModule, onViewModule, onStartCustom, userSt
     );
 };
 
-const SummaryScreen = ({ score, total, results, onRetry, onMenu }) => (
-    <div className="flex-1 flex flex-col items-center justify-center p-6 pop-in">
-        <div className="text-6xl mb-4">{score === total ? '🏆' : '📝'}</div>
-        <h2 className="text-3xl font-bold text-slate-800 mb-2">Module Complete!</h2>
-        <p className="text-slate-500 mb-8">You scored {score} / {total}</p>
+const SummaryScreen = ({ score, total, results, onRetry, onMenu }) => {
+    const isTest = results.length > 0;
 
-        <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8">
-            <div className="grid grid-cols-5 gap-px bg-slate-100">
-                {results.map((r, i) => (
-                    <div key={i} className={`p-3 flex items-center justify-center font-kanji text-lg ${r.correct ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                        {r.char}
+    return (
+        <div className="flex-1 flex flex-col items-center justify-center p-6 pop-in">
+            <div className="text-6xl mb-4">{isTest ? (score === total ? '🏆' : '📝') : '📚'}</div>
+            <h2 className="text-3xl font-bold text-slate-800 mb-2">{isTest ? 'Module Complete!' : 'Review Complete!'}</h2>
+
+            {isTest ? (
+                <>
+                    <p className="text-slate-500 mb-8">You scored {score} / {total}</p>
+
+                    <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8">
+                        <div className="grid grid-cols-5 gap-px bg-slate-100">
+                            {results.map((r, i) => (
+                                <div key={i} className={`p-3 flex items-center justify-center font-kanji text-lg ${r.correct ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                                    {r.char}
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                ))}
+                </>
+            ) : (
+                <p className="text-slate-500 mb-8">Great job studying! Ready to test your skills?</p>
+            )}
+
+            <div className="flex gap-4 w-full max-w-sm">
+                <button
+                    onClick={onMenu}
+                    className="flex-1 py-3 bg-slate-200 text-slate-700 rounded-xl font-bold active:scale-95 transition-transform"
+                >
+                    Menu
+                </button>
+                <button
+                    onClick={onRetry}
+                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg active:scale-95 transition-transform ${isTest ? 'bg-indigo-600 shadow-indigo-200' : 'bg-amber-500 shadow-amber-200'}`}
+                >
+                    {isTest ? 'Retry' : 'Study Again'}
+                </button>
             </div>
         </div>
-
-        <div className="flex gap-4 w-full max-w-sm">
-            <button
-                onClick={onMenu}
-                className="flex-1 py-3 bg-slate-200 text-slate-700 rounded-xl font-bold active:scale-95 transition-transform"
-            >
-                Menu
-            </button>
-            <button
-                onClick={onRetry}
-                className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 active:scale-95 transition-transform"
-            >
-                Retry
-            </button>
-        </div>
-    </div>
-);
+    );
+};
 
 const StudyCard = ({ activeModule, currentIndex, currentItem, revealAnswer, setRevealAnswer, prevCard, nextCard, startTest, exitToMenu }) => {
     const [animationKey, setAnimationKey] = useState(0);
@@ -707,94 +741,85 @@ const StudyCard = ({ activeModule, currentIndex, currentItem, revealAnswer, setR
     };
 
     return (
-        <div className="flex-1 w-full flex flex-col md:flex-row items-center md:justify-center pop-in max-w-md md:max-w-6xl mx-auto md:gap-12 md:px-8 h-full">
-            {/* Desktop Left: Stroke Order */}
-            <div className="hidden md:flex flex-col items-center justify-center w-1/2 h-full bg-slate-50 rounded-3xl border-2 border-slate-100 p-8 relative">
-                <div className="relative group">
-                    <StrokeOrderViewer key={animationKey} char={currentItem.char} />
-                    <button
-                        onClick={replayAnimation}
-                        className="absolute -bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-2 text-indigo-500 hover:text-indigo-700 font-bold text-sm uppercase tracking-wider transition-colors"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                        Replay
+        <div className="w-screen h-screen flex flex-col md:flex-row bg-white overflow-hidden">
+            {/* Left Panel: Kanji & Details */}
+            <div className="w-full md:w-5/12 h-[45%] md:h-full bg-slate-50 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col relative">
+                {/* Header Controls (Absolute top) */}
+                <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-center z-10">
+                    <button onClick={exitToMenu} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">
+                        <span className="text-xs font-bold uppercase">Exit</span>
                     </button>
+                    <div className="text-xs font-bold text-slate-400">
+                        {currentIndex + 1} / {activeModule.kanji.length}
+                    </div>
+                </div>
+
+                <div className="flex-1 flex flex-col items-center justify-center p-8">
+                    <div className="relative group w-40 h-40 md:w-64 md:h-64 mb-6 md:mb-10">
+                        <StrokeOrderViewer key={animationKey} char={currentItem.char} minimalist={true} />
+                        <button
+                            onClick={replayAnimation}
+                            className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2 text-indigo-500 hover:text-indigo-700 font-bold text-xs uppercase tracking-wider transition-colors"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                            Replay
+                        </button>
+                    </div>
+
+                    <div className="text-center w-full max-w-md">
+                        <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-4">{currentItem.meaning}</h2>
+                        <div className="flex justify-center gap-8 text-slate-600">
+                            <div className="flex flex-col items-center">
+                                <span className="text-[10px] font-bold uppercase text-slate-400 mb-1">Onyomi</span>
+                                <span className="font-bold text-xl md:text-2xl">{currentItem.on}</span>
+                            </div>
+                            <div className="w-px bg-slate-200"></div>
+                            <div className="flex flex-col items-center">
+                                <span className="text-[10px] font-bold uppercase text-slate-400 mb-1">Kunyomi</span>
+                                <span className="font-bold text-xl md:text-2xl">{currentItem.kun}</span>
+                            </div>
+                        </div>
+                        <p className="mt-6 text-sm text-slate-400 px-4">{currentItem.description}</p>
+                    </div>
                 </div>
             </div>
 
-            {/* Right / Mobile Container */}
-            <div className="w-full md:w-1/2 flex flex-col h-full justify-center overflow-y-auto py-4">
-                {/* Header Controls */}
-                <div className="w-full flex justify-between items-center px-4 mb-4">
-                    <button onClick={exitToMenu} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
-                        <span className="text-xs font-bold uppercase">Exit</span>
-                    </button>
-                    <div className="text-xs font-bold text-indigo-400 uppercase tracking-wider">Study Mode</div>
-                    <button onClick={startTest} className="p-2 text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors">
-                        <span className="text-xs font-bold uppercase">Test Now</span>
-                    </button>
-                </div>
-
-                <div className="w-full bg-indigo-50 p-6 rounded-3xl mb-6 relative mx-4 w-[calc(100%-2rem)]">
-                    {/* Index Indicator */}
-                    <div className="absolute top-4 right-4 text-xs font-bold text-indigo-300">
-                        {currentIndex + 1} / {activeModule.kanji.length}
-                    </div>
-
-                    <div className="text-center space-y-2 mt-2">
-                        <div className="flex flex-col items-center gap-1 mb-2">
-                            <span className="text-xs text-indigo-400 font-bold uppercase tracking-wider">Readings</span>
-                            <div className="flex flex-col gap-1">
-                                <div className="text-2xl font-bold text-indigo-900">{currentItem.on}</div>
-                                <div className="text-2xl font-bold text-indigo-900">{currentItem.kun}</div>
-                            </div>
-                        </div>
-                        <div className="w-16 h-0.5 bg-indigo-100 mx-auto my-2"></div>
-                        <h2 className="text-lg font-bold text-indigo-600/80">{currentItem.meaning}</h2>
-                        <p className="text-sm text-indigo-400">{currentItem.description}</p>
-                    </div>
-                </div>
-
-                {/* Mobile Stroke Order (Hidden on Desktop) */}
-                <div className="mb-6 relative group md:hidden flex flex-col items-center justify-center gap-4">
-                    <StrokeOrderViewer key={`mobile-${animationKey}`} char={currentItem.char} />
+            {/* Right Panel: Practice Area */}
+            <div className="w-full md:w-7/12 h-[55%] md:h-full flex flex-col bg-white relative">
+                <div className="absolute top-6 right-6 z-10 hidden md:block">
                     <button
-                        onClick={replayAnimation}
-                        className="flex items-center gap-2 text-indigo-500 hover:text-indigo-700 font-bold text-xs uppercase tracking-wider transition-colors"
+                        onClick={startTest}
+                        className="px-6 py-3 bg-indigo-50 text-indigo-600 rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-indigo-100 transition-colors shadow-sm"
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                        Replay
+                        Test Now &rarr;
+                    </button>
+                </div>
+                <div className="md:hidden absolute top-4 right-4 z-10">
+                    <button
+                        onClick={startTest}
+                        className="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:bg-indigo-100 transition-colors shadow-sm"
+                    >
+                        Test &rarr;
                     </button>
                 </div>
 
-                {/* Details Grid - Removed as readings are now main focus */}
-                {/* <div className="w-full grid grid-cols-2 gap-4 mb-6 px-4">
-                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm text-center">
-                        <span className="text-xs text-slate-400 font-bold block mb-1">音読み (Onyomi)</span>
-                        <span className="font-bold text-slate-700 text-xl">{currentItem.on}</span>
-                    </div>
-                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm text-center">
-                        <span className="text-xs text-slate-400 font-bold block mb-1">訓読み (Kunyomi)</span>
-                        <span className="font-bold text-slate-700 text-xl">{currentItem.kun}</span>
-                    </div>
-                </div> */}
-
-                {/* Drawing Pad */}
-                <div className="px-4 mb-6 w-full">
+                <div className="flex-1 w-full bg-slate-50/30 relative">
+                    {/* The DrawingPad already has w-full h-full from previous step, but we ensure container allows it */}
                     <DrawingPad key={currentItem.char} />
                 </div>
 
-                <div className="mt-auto w-full px-4 pb-2 flex gap-4">
+                {/* Bottom Navigation Bar */}
+                <div className="p-4 md:p-8 border-t border-slate-100 bg-white flex gap-4">
                     <button
                         onClick={prevCard}
                         disabled={currentIndex === 0}
-                        className={`flex-1 py-4 rounded-xl font-bold transition-all ${currentIndex === 0 ? 'bg-slate-100 text-slate-300' : 'bg-slate-200 text-slate-600 hover:bg-slate-300 active:scale-95'}`}
+                        className={`flex-1 py-4 md:py-5 rounded-2xl font-bold transition-all border-2 text-lg ${currentIndex === 0 ? 'border-slate-100 text-slate-300' : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50 active:scale-95'}`}
                     >
                         Back
                     </button>
                     <button
                         onClick={nextCard}
-                        className="flex-[2] py-4 bg-slate-800 text-white rounded-xl font-bold shadow-lg active:scale-95 transition-transform"
+                        className="flex-[2] py-4 md:py-5 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-xl shadow-slate-200 active:scale-95 transition-transform hover:bg-slate-800"
                     >
                         Next
                     </button>
@@ -808,102 +833,111 @@ const TestCard = ({ activeModule, currentIndex, currentItem, progress, revealAns
     const [testPromptType, setTestPromptType] = useState('reading'); // 'meaning' or 'reading'
 
     return (
-        <div className="flex-1 w-full flex flex-col items-center pop-in max-w-md mx-auto">
-            {/* Progress Bar */}
-            <div className="w-full h-1.5 bg-slate-100 relative">
-                <div className="h-full bg-green-500 transition-all duration-300" style={{ width: `${progress}%` }} />
-            </div>
-
-            {/* Exit Control for Test Mode */}
-            <div className="w-full flex justify-start p-4">
-                <button onClick={exitToMenu} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
-                    <span className="text-xs font-bold uppercase">Exit Test</span>
+        <div className="w-screen h-screen flex flex-col bg-white overflow-hidden">
+            {/* Header: Progress & Exit */}
+            <div className="w-full bg-slate-50 border-b border-slate-100 p-4 md:p-6 flex items-center justify-between shrink-0">
+                <button onClick={exitToMenu} className="p-3 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-xl transition-colors">
+                    <span className="text-xs font-bold uppercase tracking-wider">Exit Test</span>
                 </button>
+                <div className="flex-1 mx-6 md:mx-12 h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-500 transition-all duration-300" style={{ width: `${progress}%` }} />
+                </div>
+                <span className="text-xs font-bold text-slate-400">
+                    {currentIndex + 1} / {activeModule.kanji.length}
+                </span>
             </div>
 
-            <div className="w-full flex-1 flex flex-col p-6 pt-0">
-                <div className="flex justify-center mb-6">
-                    <div className="bg-slate-100 p-1 rounded-lg flex text-sm font-bold">
+            <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 max-w-4xl mx-auto w-full">
+
+                {/* Controls (Top) */}
+                <div className="flex justify-center mb-8 shrink-0">
+                    <div className="bg-slate-100 p-1.5 rounded-xl flex text-sm font-bold shadow-inner">
                         <button
                             onClick={() => setTestPromptType('meaning')}
-                            className={`px-4 py-2 rounded-md transition-all ${testPromptType === 'meaning' ? 'bg-white shadow text-slate-800' : 'text-slate-400'}`}
+                            className={`px-6 py-2 rounded-lg transition-all ${testPromptType === 'meaning' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600'}`}
                         >
                             English
                         </button>
                         <button
                             onClick={() => setTestPromptType('reading')}
-                            className={`px-4 py-2 rounded-md transition-all ${testPromptType === 'reading' ? 'bg-white shadow text-slate-800' : 'text-slate-400'}`}
+                            className={`px-6 py-2 rounded-lg transition-all ${testPromptType === 'reading' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600'}`}
                         >
                             Readings
                         </button>
                     </div>
                 </div>
 
-                <div className="text-center mb-12 mt-4">
-                    <span className="inline-block px-3 py-1 bg-red-100 text-red-600 rounded-full text-xs font-bold uppercase tracking-wider mb-4">Test Mode</span>
-
+                {/* Prompt Question */}
+                <div className="text-center mb-8 shrink-0">
+                    <span className="inline-block px-3 py-1 bg-red-50 text-red-500 rounded-full text-[10px] font-bold uppercase tracking-wider mb-6 border border-red-100">Test Mode</span>
                     {testPromptType === 'meaning' ? (
                         <>
-                            <h2 className="text-4xl font-bold text-slate-800 mb-4">{currentItem.meaning}</h2>
-                            <p className="text-slate-400">Write the Kanji for this meaning</p>
+                            <h2 className="text-4xl md:text-6xl font-black text-slate-800 mb-4 tracking-tight">{currentItem.meaning}</h2>
+                            <p className="text-slate-400 font-medium">Write the Kanji for this meaning</p>
                         </>
                     ) : (
                         <>
-                            <h2 className="text-3xl font-bold text-slate-800 mb-4">{currentItem.on} / {currentItem.kun}</h2>
-                            <p className="text-slate-400">Write the Kanji for these readings</p>
+                            <h2 className="text-3xl md:text-5xl font-black text-slate-800 mb-4 tracking-tight">{currentItem.on} / {currentItem.kun}</h2>
+                            <p className="text-slate-400 font-medium">Write the Kanji for these readings</p>
                         </>
                     )}
                 </div>
 
-                {/* Reveal Area */}
-                <div className="flex-1 flex flex-col items-center justify-center min-h-[200px]">
+                {/* Static Container for Answer/Placeholder to prevent Layout Shift */}
+                <div className="w-full max-w-md aspect-square mb-8 relative flex items-center justify-center shrink-0">
                     {revealAnswer ? (
-                        <div className="flex flex-col items-center pop-in">
-                            <StrokeOrderViewer char={currentItem.char} className="w-40 h-40 md:w-56 md:h-56 mb-4" />
+                        // Answer Revealed
+                        <div className="w-full h-full flex flex-col items-center justify-center pop-in bg-slate-50/50 rounded-3xl border border-slate-100">
+                            <div className="w-48 h-48 md:w-64 md:h-64">
+                                <StrokeOrderViewer char={currentItem.char} minimalist={true} />
+                            </div>
 
-                            {/* Show the info that wasn't in the prompt */}
-                            {testPromptType === 'meaning' ? (
-                                <div className="flex gap-4 text-sm text-slate-500">
-                                    <span>{currentItem.on}</span>
-                                    <span className="text-slate-300">|</span>
-                                    <span>{currentItem.kun}</span>
-                                </div>
-                            ) : (
-                                <div className="text-xl font-bold text-slate-700">
-                                    {currentItem.meaning}
-                                </div>
-                            )}
+                            <div className="mt-4 p-4 text-center">
+                                {testPromptType === 'meaning' ? (
+                                    <div className="flex justify-center gap-4 text-lg font-bold text-slate-600">
+                                        <span>{currentItem.on}</span>
+                                        <span className="text-slate-300">|</span>
+                                        <span>{currentItem.kun}</span>
+                                    </div>
+                                ) : (
+                                    <div className="text-2xl font-bold text-slate-700">
+                                        {currentItem.meaning}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     ) : (
-                        <div className="w-40 h-40 border-2 border-dashed border-slate-300 rounded-3xl flex items-center justify-center bg-slate-50">
-                            <span className="text-4xl text-slate-300">?</span>
+                        // Placeholder
+                        <div className="w-full h-full border-4 border-dashed border-slate-200 rounded-3xl flex items-center justify-center bg-slate-50 group transition-colors hover:border-slate-300 hover:bg-slate-100">
+                            <span className="text-6xl md:text-8xl text-slate-200 font-bold group-hover:text-slate-300 transition-colors">?</span>
                         </div>
                     )}
                 </div>
 
-                <div className="mt-auto space-y-4">
+                {/* Bottom Actions */}
+                <div className="w-full max-w-md shrink-0">
                     {!revealAnswer ? (
                         <button
                             onClick={() => setRevealAnswer(true)}
-                            className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 active:scale-95 transition-transform"
+                            className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-bold text-lg shadow-xl shadow-indigo-200 active:scale-95 transition-transform hover:bg-indigo-700"
                         >
                             Reveal Answer
                         </button>
                     ) : (
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-6">
                             <button
                                 onClick={() => handleSelfGrade(false)}
-                                className="py-4 bg-red-100 text-red-700 rounded-xl font-bold hover:bg-red-200 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                                className="py-5 bg-white border-2 border-red-100 text-red-600 rounded-2xl font-bold text-lg hover:bg-red-50 hover:border-red-200 active:scale-95 transition-all flex items-center justify-center gap-3 shadow-sm"
                             >
                                 <span>Incorrect</span>
-                                <span className="text-lg">✕</span>
+                                <span className="text-xl">✕</span>
                             </button>
                             <button
                                 onClick={() => handleSelfGrade(true)}
-                                className="py-4 bg-green-100 text-green-700 rounded-xl font-bold hover:bg-green-200 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                                className="py-5 bg-emerald-500 text-white rounded-2xl font-bold text-lg hover:bg-emerald-600 active:scale-95 transition-all flex items-center justify-center gap-3 shadow-xl shadow-emerald-200"
                             >
                                 <span>Correct</span>
-                                <span className="text-lg">✓</span>
+                                <span className="text-xl">✓</span>
                             </button>
                         </div>
                     )}
@@ -913,11 +947,135 @@ const TestCard = ({ activeModule, currentIndex, currentItem, progress, revealAns
     );
 };
 
+// --- Component: Flashcard Mode ---
+const FlashcardMode = ({ activeModule, currentIndex, currentItem, revealAnswer, setRevealAnswer, prevCard, nextCard, exitToMenu }) => {
+    // Current item example data (if exists)
+    const example = currentItem.examples && currentItem.examples[0];
+    const [showHandwritten, setShowHandwritten] = useState(false);
+
+    return (
+        <div className="flex-1 w-full flex flex-col items-center pop-in max-w-md md:max-w-2xl mx-auto h-full p-6">
+            {/* Header */}
+            <div className="w-full flex justify-between items-center mb-6">
+                <button onClick={exitToMenu} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                    <span className="text-xs font-bold uppercase">Exit</span>
+                </button>
+                <div className="flex items-center gap-4">
+                    <div className="text-xs font-bold text-amber-500 uppercase tracking-wider hidden md:block">Flashcard Mode</div>
+                    <button
+                        onClick={() => setShowHandwritten(!showHandwritten)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${showHandwritten ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                    >
+                        {showHandwritten ? (
+                            <>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                <span>Handwritten</span>
+                            </>
+                        ) : (
+                            <>
+                                <span className="font-serif text-sm">あ</span>
+                                <span>Font</span>
+                            </>
+                        )}
+                    </button>
+                </div>
+                <div className="text-xs font-bold text-slate-400">
+                    {currentIndex + 1} / {activeModule.kanji.length}
+                </div>
+            </div>
+
+            {/* Flashcard Area */}
+            <div className="w-full flex-1 relative perspective-1000">
+                <div
+                    onClick={(e) => {
+                        // Prevent flip if clicking internal interactive elements if any
+                        setRevealAnswer(!revealAnswer);
+                    }}
+                    className={`w-full h-full relative preserve-3d transition-transform duration-500 cursor-pointer ${revealAnswer ? 'rotate-y-180' : ''}`}
+                    style={{ transformStyle: 'preserve-3d', transform: revealAnswer ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
+                >
+                    {/* Front of Card */}
+                    <div className="absolute inset-0 backface-hidden bg-white rounded-3xl shadow-xl border-2 border-slate-100 flex flex-col items-center justify-center p-8">
+                        <div className="w-full flex-1 flex items-center justify-center">
+                            {showHandwritten ? (
+                                <div className="w-48 h-48 md:w-64 md:h-64">
+                                    <StrokeOrderViewer char={currentItem.char} minimalist={true} />
+                                </div>
+                            ) : (
+                                <div className="text-9xl font-kanji text-slate-800">{currentItem.char}</div>
+                            )}
+                        </div>
+                        <div className="text-sm text-slate-400 font-bold uppercase tracking-wider mt-4">Tap to Flip</div>
+                    </div>
+
+                    {/* Back of Card */}
+                    <div className="absolute inset-0 backface-hidden bg-white rounded-3xl shadow-xl border-2 border-amber-100 flex flex-col items-center justify-center p-8 rotate-y-180" style={{ transform: 'rotateY(180deg)', backfaceVisibility: 'hidden' }}>
+                        <div className="flex flex-col items-center gap-1 mb-6">
+                            {showHandwritten ? (
+                                <div className="w-24 h-24 mb-2">
+                                    <StrokeOrderViewer char={currentItem.char} minimalist={true} />
+                                </div>
+                            ) : (
+                                <div className="text-6xl font-kanji text-slate-800 mb-2">{currentItem.char}</div>
+                            )}
+                            <div className="text-lg font-bold text-indigo-600">{currentItem.meaning}</div>
+                        </div>
+
+                        <div className="w-full grid grid-cols-2 gap-4 mb-6">
+                            <div className="bg-slate-50 p-3 rounded-xl text-center">
+                                <div className="text-xs text-slate-400 font-bold uppercase mb-1">Onyomi</div>
+                                <div className="font-bold text-slate-700">{currentItem.on}</div>
+                            </div>
+                            <div className="bg-slate-50 p-3 rounded-xl text-center">
+                                <div className="text-xs text-slate-400 font-bold uppercase mb-1">Kunyomi</div>
+                                <div className="font-bold text-slate-700">{currentItem.kun}</div>
+                            </div>
+                        </div>
+
+                        {example ? (
+                            <div className="w-full bg-amber-50 p-4 rounded-xl border border-amber-100">
+                                <div className="text-xs text-amber-500 font-bold uppercase tracking-wider mb-2 text-center">Example Word</div>
+                                <div className="flex flex-col items-center gap-1">
+                                    <div className="text-2xl font-kanji text-slate-800">{example.word}</div>
+                                    <div className="text-sm text-slate-500">{example.reading}</div>
+                                    <div className="text-sm font-bold text-slate-700 mt-1">{example.meaning}</div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="w-full bg-slate-50 p-4 rounded-xl border border-slate-100 text-center text-slate-400 text-sm">
+                                Example coming soon
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Navigation Controls */}
+            <div className="w-full mt-8 flex gap-4">
+                <button
+                    onClick={(e) => { e.stopPropagation(); prevCard(); }}
+                    disabled={currentIndex === 0}
+                    className={`flex-1 py-4 rounded-xl font-bold transition-all ${currentIndex === 0 ? 'bg-slate-100 text-slate-300' : 'bg-slate-200 text-slate-600 hover:bg-slate-300 active:scale-95'}`}
+                >
+                    Back
+                </button>
+                <button
+                    onClick={(e) => { e.stopPropagation(); nextCard(); }}
+                    className="flex-[2] py-4 bg-amber-500 text-white rounded-xl font-bold shadow-lg shadow-amber-200 active:scale-95 transition-transform"
+                >
+                    Next
+                </button>
+            </div>
+        </div>
+    );
+};
+
+
 // --- Main Application Component ---
 export default function App() {
     const [activeModule, setActiveModule] = useState(MODULES[0]);
 
-    const [phase, setPhase] = useState('menu'); // 'menu', 'study', 'test', 'summary'
+    const [phase, setPhase] = useState('menu'); // 'menu', 'study', 'test', 'flashcards', 'summary'
     const [currentIndex, setCurrentIndex] = useState(0);
     const [revealAnswer, setRevealAnswer] = useState(false);
     const [score, setScore] = useState(0);
@@ -928,12 +1086,16 @@ export default function App() {
 
 
 
-    const launchModule = (module, index) => {
+    const launchModule = (module, mode = 'study') => {
         setActiveModule(module);
-        setCurrentIndex(index);
-        setPhase('study');
+        setCurrentIndex(0);
+        setPhase(mode); // 'study', 'test', 'flashcards'
         setRevealAnswer(false);
         setViewingModule(null);
+        if (mode === 'test') {
+            setScore(0);
+            setResults([]);
+        }
     };
 
     const startTest = () => {
@@ -958,6 +1120,9 @@ export default function App() {
         } else {
             if (phase === 'study') {
                 startTest();
+            } else if (phase === 'flashcards') {
+                // For flashcards, maybe just loop or go to summary? Let's go to summary for now to indicate completion
+                setPhase('summary');
             } else {
                 setPhase('summary');
             }
@@ -1053,8 +1218,20 @@ export default function App() {
                 {phase === 'menu' && viewingModule && (
                     <ModuleOverview
                         module={viewingModule}
-                        onStart={(m) => launchModule(m, 0)}
+                        onStart={(m, mode) => launchModule(m, mode)}
                         onBack={() => setViewingModule(null)}
+                    />
+                )}
+                {phase === 'flashcards' && (
+                    <FlashcardMode
+                        activeModule={activeModule}
+                        currentIndex={currentIndex}
+                        currentItem={currentItem}
+                        revealAnswer={revealAnswer}
+                        setRevealAnswer={setRevealAnswer}
+                        prevCard={prevCard}
+                        nextCard={nextCard}
+                        exitToMenu={exitToMenu}
                     />
                 )}
                 {phase === 'study' && (
