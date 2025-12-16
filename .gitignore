@@ -119,3 +119,25 @@ dist
 
 # macOS
 .DS_Store
+.env*
+*.wav
+kanji-quest-clean.git/
+utils/backend/
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pth
+*.pt
+*.dylib
+.env*
+*.wav
+kanji-quest-clean.git/
+utils/backend/
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pth
+*.pt
+*.dylib
